@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import *
+from tkinter.font import BOLD, Font
 import time
 import random
 
@@ -72,19 +73,23 @@ class Food:
 
 def main():
     win=tkinter.Tk()
+    generations = 200
 
-    canvas = Canvas(win, width=1600, height=1000)
+    canvas = Canvas(win, width=1600, height=900)
 
-    ret_val = newGen(canvas, True)
+    font = Font(win, size=35, weight=BOLD)
+
+    ret_val = new_gen(canvas, win, True)
 
     canvas.pack()
 
-    generations = 20
     for i in range(generations):
-        test(win, 0, ret_val[0], ret_val[1])
+        label = Label(win, text="Gen "+str(i+1)+"/" + str(generations), font=font)
+        label.place(x=1, y=1)
+        test(win, 0, ret_val[0], ret_val[1], canvas)
         best_bugs = get_best_bugs(ret_val[0])
         hide_all(ret_val[0], ret_val[1], canvas, win)
-        ret_val = newGen(canvas, False, best_bugs=best_bugs)
+        ret_val = new_gen(canvas, win, False, best_bugs=best_bugs)
 
     hide_all(ret_val[0], ret_val[1], canvas, win)
 
@@ -113,20 +118,17 @@ def hide_all(bugs, foods, canvas, window):
 
     window.update()
 
-def newGen(canvas, first_round, best_bugs=None):
+def new_gen(canvas, win, first_round, best_bugs=None):
     radius = 5
     mutation_rate = 1.5
     bugs = []
     food = []
 
-    for i in range(900):
-        pos = (random.random()*1600, random.random()*1000)
-        oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
-        food += [Food(10, pos, oval, canvas)]
+    new_food(700, food, canvas)
 
     if first_round:
         for i in range(60):
-            pos = (random.random()*1600, random.random()*1000)
+            pos = (random.random()*1600, random.random()*900)
             speed = random.random()*1
             oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
             bugs += [Bug(pos, speed, oval, canvas)]
@@ -134,17 +136,19 @@ def newGen(canvas, first_round, best_bugs=None):
     else:
         speeds = []
         for bug in best_bugs:
-            pos = (random.random()*1600, random.random()*1000)
+            pos = (random.random()*1600, random.random()*900)
             speed = bug.get_speed()
             speeds += [speed]
             oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
             bugs += [Bug(pos, speed, oval, canvas)]
 
         av_speed = sum(speeds)/len(speeds)
-        print("av top speed: ", av_speed)
+        font = Font(win, size=15)
+        label = Label(win, text="Ave top 20% speed: {:.2f}".format(av_speed), font=font)
+        label.place(x=1, y=50)
 
-        for i in range(20-(len(bugs))):
-            pos = (random.random()*1600, random.random()*1000)
+        for i in range(60-(len(bugs))):
+            pos = (random.random()*1600, random.random()*900)
             speed =  av_speed + random.random()*mutation_rate - random.random()*mutation_rate
             oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
             bugs += [Bug(pos, speed, oval, canvas)]
@@ -152,18 +156,17 @@ def newGen(canvas, first_round, best_bugs=None):
         canvas.pack()
     return (bugs, food)
 
+def new_food(food_num, food_list, canvas):
+    for i in range(food_num):
+        radius = 5
+        pos = (random.random()*1600, random.random()*900)
+        oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
+        food_list += [Food(10, pos, oval, canvas)]
 
-# def new_food(food_num):
-#     food = []
-#     for i in range(food_num):
-#         pos = (random.random()*800, random.random()*800)
-#         oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
-#         food += [Food(10, pos, oval, canvas)]
-#
-#     canvas.pack()
+    canvas.pack()
 
 
-def test(win, count, bugs, food_list):
+def test(win, count, bugs, food_list, canvas):
     for b in bugs:
         ret_val = b.move(food_list)
         if ret_val != None:
@@ -172,9 +175,11 @@ def test(win, count, bugs, food_list):
 
     win.update()
 
-    if count < 400:
-        time.sleep(.01)
-        test(win, count+1, bugs, food_list)
+
+    if count < 500:
+        new_food(1, food_list, canvas)
+        # time.sleep(.01)
+        test(win, count+1, bugs, food_list, canvas)
 
 
 if __name__ == '__main__':
