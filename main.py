@@ -72,22 +72,38 @@ def main():
 
     canvas = Canvas(win, width=800, height=800)
 
-    ret_val = newGen(canvas)
+    ret_val = newGen(canvas, True)
 
     canvas.pack()
 
     generations = 5
     for i in range(generations):
         test(win, 0, ret_val[0], ret_val[1])
+        best_bugs = get_best_bugs(ret_val[0])
+        print(len(best_bugs))
 
         hide_all(ret_val[0], ret_val[1], canvas, win)
-
-        ret_val = newGen(canvas)
-
+        ret_val = newGen(canvas, False)
 
     hide_all(ret_val[0], ret_val[1], canvas, win)
 
 
+
+def get_best_bugs(bugs):
+    best = []
+    scores = []
+    for bug in bugs:
+        scores += [bug.get_points()]
+
+    scores.sort(reverse=True)
+    scores = scores[:int(len(bugs)*.20)]
+    print(scores)
+
+    for bug in bugs:
+        if bug.get_points() in scores:
+            best += [bug]
+
+    return best
 
 def hide_all(bugs, foods, canvas, window):
     for bug in bugs:
@@ -98,23 +114,25 @@ def hide_all(bugs, foods, canvas, window):
 
     window.update()
 
-def newGen(canvas):
+def newGen(canvas, first_round):
     radius = 5
     bugs = []
     food = []
 
-    for i in range(200):
-        pos = (random.random()*800, random.random()*800)
-        oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
-        food += [Food(10, pos, oval, canvas)]
+    if first_round:
+        for i in range(200):
+            pos = (random.random()*800, random.random()*800)
+            oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
+            food += [Food(10, pos, oval, canvas)]
 
-    for i in range(20):
-        pos = (random.random()*800, random.random()*800)
-        speed = random.random()*5
-        oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
-        bugs += [Bug(pos, speed, oval, canvas)]
-
-    canvas.pack()
+        for i in range(20):
+            pos = (random.random()*800, random.random()*800)
+            speed = random.random()*5
+            oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
+            bugs += [Bug(pos, speed, oval, canvas)]
+            canvas.pack()
+    else:
+        print("test")
 
     return (bugs, food)
 
