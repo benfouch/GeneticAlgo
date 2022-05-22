@@ -9,6 +9,16 @@ class Bug:
         self.speed = speed
         self.shape = shape
         self.canvas = canvas
+        self.score = 0
+
+    def add_points(self, points):
+        self.score += points
+
+    def get_points(self):
+        return self.score
+
+    def hide(self):
+        self.canvas.delete(self.shape)
 
     def move(self, food_list):
         # move it to food
@@ -31,6 +41,7 @@ class Bug:
             if (((self.pos[0] - nearest.get_pos()[0]))**2 + ((self.pos[1] - nearest.get_pos()[1]))**2)**(1/2) <= self.speed:
                 self.canvas.move(self.shape, self.pos[0] - nearest.get_pos()[0], self.pos[1] - nearest.get_pos()[1])
                 self.pos = nearest.get_pos()
+                self.add_points(food.get_points())
                 return nearest
             else:
                 # move the bug on the canvas
@@ -44,12 +55,11 @@ class Food:
         self.pos = pos
         self.shape = oval
         self.canvas = canvas
-        print(oval)
 
     def get_pos(self):
         return self.pos
 
-    def get_healing(self):
+    def get_points(self):
         return self.healing_points
 
     def hide(self):
@@ -60,30 +70,53 @@ class Food:
 def main():
     win=tkinter.Tk()
 
-    canvas = Canvas(win, width=700, height=700)
+    canvas = Canvas(win, width=800, height=800)
 
+    ret_val = newGen(canvas)
+
+    canvas.pack()
+
+    generations = 5
+    for i in range(generations):
+        test(win, 0, ret_val[0], ret_val[1])
+
+        hide_all(ret_val[0], ret_val[1], canvas, win)
+
+        ret_val = newGen(canvas)
+
+
+    hide_all(ret_val[0], ret_val[1], canvas, win)
+
+
+
+def hide_all(bugs, foods, canvas, window):
+    for bug in bugs:
+        bug.hide()
+
+    for food in foods:
+        food.hide()
+
+    window.update()
+
+def newGen(canvas):
     radius = 5
     bugs = []
     food = []
 
-
-    for i in range(100):
-        pos = (random.random()*650, random.random()*650)
+    for i in range(200):
+        pos = (random.random()*800, random.random()*800)
         oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='green')
         food += [Food(10, pos, oval, canvas)]
 
     for i in range(20):
-        pos = (random.random()*650, random.random()*650)
-        speed = random.random()*15
+        pos = (random.random()*800, random.random()*800)
+        speed = random.random()*5
         oval=canvas.create_oval(pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius, fill='blue')
         bugs += [Bug(pos, speed, oval, canvas)]
 
-
-
     canvas.pack()
 
-    test(win, 0, bugs, food)
-    win.mainloop()
+    return (bugs, food)
 
 
 def test(win, count, bugs, food_list):
@@ -96,7 +129,7 @@ def test(win, count, bugs, food_list):
     win.update()
 
     if count < 400:
-        time.sleep(.05)
+        time.sleep(.01)
         test(win, count+1, bugs, food_list)
 
 
