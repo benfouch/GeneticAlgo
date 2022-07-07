@@ -1,4 +1,4 @@
-import tkinter
+import tkinter 
 from tkinter import *
 from tkinter.font import BOLD, Font
 import time
@@ -176,7 +176,7 @@ def test(win, count, bugs, food_list, canvas):
     win.update()
 
 
-    if count < 500:
+    if count < 400:
         new_food(1, food_list, canvas)
         # time.sleep(.01)
         test(win, count+1, bugs, food_list, canvas)
